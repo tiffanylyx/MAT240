@@ -4,9 +4,18 @@
 
 ### Facial Expression
 - Mouth : height/width
-- Eyebrow : Highest - Lowest
-- Eye : relative X position of the Bounding box
-- Jaw : relative Y position of the Bounding box
+- Eye : height/width
+- Noise : k of the nose bridge
+
+chin
+left_eyebrow
+right_eyebrow
+nose_bridge
+nose_tip
+left_eye
+right_eye
+top_lip
+bottom_lip
 
 ### Emotion
 Different filtergraph

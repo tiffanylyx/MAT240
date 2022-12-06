@@ -170,6 +170,7 @@ while True:
                 img = cv2.resize(res_crop,[48,48])
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                 emotions = emotion_detect(img,probs)[0].tolist()
+                print(emotions)
                 if frame_count%3==0:
                     for i in range(len(emotions)):
                         msg = pyOSC3.OSCMessage()

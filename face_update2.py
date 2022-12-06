@@ -17,6 +17,10 @@ detector = dlib.cnn_face_detection_model_v1("mmod_human_face_detector.dat")
 factor = 4
 client = pyOSC3.OSCClient()
 client.connect( ( 'localhost', 3333 ) )
+
+client2 = pyOSC3.OSCClient()
+client2.connect( ( 'localhost', 3000 ) )
+
 isClosed = False
 
 # Blue color in BGR
@@ -159,13 +163,14 @@ scale_all = []
 while True:
     frame_count += 1
     ret, frame = capture.read()
-    width = frame.shape[1]/factor
-    height = frame.shape[0]/factor
+
     rects, face_landmarks_list = detect_face_bb_blob(frame,detector)
     #face_landmarks_list = detect_face_blob(frame)
     res, res_list = plot_res_bb(frame, rects)
     res = plot_res_blob(res,face_landmarks_list)
     cv2.imshow('frame', res)
+    width = frame.shape[1]/factor
+    height = frame.shape[0]/factor
     '''
     if frame_count%3==0:
         msg = pyOSC3.OSCMessage()
@@ -176,18 +181,30 @@ while True:
     if len(rects) > 0:
         count = 0
         for faceRect in rects:
+
             res_crop = crop_image(frame, faceRect)
             try:
+            #if 1>0:
+                size = faceRect.rect.right()-faceRect.rect.left()
+                send_message('face_size', size/width)
                 img = cv2.resize(res_crop,[48,48])
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                '''
+
                 emotions = emotion_detect(img,probs)[0].tolist()
                 for i in range(len(emotions)):
                     send_message("emotion_"+EMOTIONS[i],emotions[i])
-                '''
-                res = cv2.resize(res_crop,[30,30])
+
+                res = cv2.resize(res_crop,[50,50])
                 B = res[:,:,0]
                 pixel_list_B = compute_pixel_list(B)
+                b = np.asarray(pixel_list_B).astype("uint8").tobytes()
+
+
+                msg = pyOSC3.OSCBundle()
+                msg.setAddress("OSCBlob")
+                msg.append(b,typehint = 'b')
+                client2.send(msg)
+
                 '''
                 f_B = np.fft.fft(pixel_list_B)
                 f_new_B = filter(f_B)
@@ -244,7 +261,7 @@ while True:
                     first = nose_bridge[0]
                     last = nose_bridge[-1]
                     nose_bridge_k = (last[1]-first[1])/max(1,(last[0]-first[0]))
-                    send_message('nose_bridge_k', nose_bridge_k)
+                    send_message('nose_bridge_k', abs(nose_bridge_k))
 
 
 
